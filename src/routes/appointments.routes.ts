@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { startOfHour, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 
 import AppointmentsRepository from '../repositories/AppointmentsRepository';
+import CreateAppointmentService from '../services/CreateAppointmentService';
 
 // SoC: Separation of Concers (Separação de preocupações)
 // Rota: Receber a requisição, chamar outro arquivo, devolver uma respposta
@@ -15,20 +16,17 @@ appointmentsRouter.get('/', (request, response) => {
 });
 
 appointmentsRouter.post('/', (request, response) => {
-  const { provider, date } = request.body;
-  const parsedDate = startOfHour(parseISO(date));
-  const findAppointmentInSameDate = appointmentsRepository.findByDate(parsedDate);
+  try {
+    const { provider, date } = request.body;
+    const parsedDate = parseISO(date);
 
-  if (findAppointmentInSameDate) {
-    return response.status(400).json({message: 'This appointment is already boocked'});
+    const createAppoinment = new CreateAppointmentService(appointmentsRepository);
+    const appointment = createAppoinment.execute({ date: parsedDate, provider });
+
+    return response.json(appointment);
+  } catch (err) {
+    return response.status(400).json({ error: err.message })
   }
-
-  const appointment = appointmentsRepository.create({
-    provider,
-    date: parsedDate
-  });
-
-  return response.json(appointment);
 });
 
 export default appointmentsRouter;
