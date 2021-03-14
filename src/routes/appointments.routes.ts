@@ -4,7 +4,7 @@ import { startOfHour, parseISO } from 'date-fns';
 import AppointmentsRepository from '../repositories/AppointmentsRepository';
 
 // SoC: Separation of Concers (Separação de preocupações)
-
+// Rota: Receber a requisição, chamar outro arquivo, devolver uma respposta
 const appointmentsRouter = Router();
 const appointmentsRepository = new AppointmentsRepository();
 
@@ -23,7 +23,10 @@ appointmentsRouter.post('/', (request, response) => {
     return response.status(400).json({message: 'This appointment is already boocked'});
   }
 
-  const appointment = appointmentsRepository.create(provider, parsedDate);
+  const appointment = appointmentsRepository.create({
+    provider,
+    date: parsedDate
+  });
 
   return response.json(appointment);
 });
